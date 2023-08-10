@@ -64,6 +64,7 @@ class KubernetesJobOperator(KubernetesJobOperatorDefaultsBase):
         name_prefix: str = None,
         namespace: str = None,
         envs: dict = None,
+        labels: dict = None,
         body: Union[str, dict, List[dict]] = None,
         body_filepath: str = None,
         image_pull_policy: str = None,
@@ -92,6 +93,8 @@ class KubernetesJobOperator(KubernetesJobOperatorDefaultsBase):
             name_prefix (str, optional): The kubernetes resource(s) name prefix. Defaults to (corrected) task_id.
             namespace (str, optional): The kubernetes namespace to run in. Defaults to current namespace.
             envs (dict, optional): A dictionary of key value pairs that is loaded into the environment variables.
+                Defaults to None.
+            labels (dict, optional): A dictionary of key value pairs that is inserted to the job labels.
                 Defaults to None.
             body (Union[str, dict, List[dict]], optional):
                 The dictionary/list[dictionary] or yaml that defines the job yaml.
@@ -150,6 +153,7 @@ class KubernetesJobOperator(KubernetesJobOperatorDefaultsBase):
 
         assert envs is None or isinstance(envs, dict), ValueError("The env collection must be a dict or None")
         assert image is None or isinstance(image, str), ValueError("image must be a string or None")
+        assert labels is None or isinstance(labels, dict), ValueError("The labels collection must be a dict or None")
 
         # Job properties.
         self._job_is_executing = False
@@ -160,6 +164,7 @@ class KubernetesJobOperator(KubernetesJobOperatorDefaultsBase):
         self.arguments = arguments
         self.image = image
         self.envs = envs
+        self.labels = labels
         self.image_pull_policy = image_pull_policy
         self.body = body
         self.name_prefix = name_prefix
@@ -190,6 +195,7 @@ class KubernetesJobOperator(KubernetesJobOperatorDefaultsBase):
                 "namespace",
                 "config_file",
                 "cluster_context",
+                "labels",
             ]
 
         # Used for debugging
@@ -286,6 +292,7 @@ class KubernetesJobOperator(KubernetesJobOperatorDefaultsBase):
             logger=self.logger if hasattr(self, "logger") else None,
             auto_load_kube_config=True,
             name_prefix=self._create_kubernetes_job_name_prefix(self.name_prefix or self.task_id),
+            labels=self.labels,
         )
 
     def get_template_env(self) -> jinja2.Environment:

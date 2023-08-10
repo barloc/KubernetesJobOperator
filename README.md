@@ -186,6 +186,7 @@ arguments | None | A list of arguments to be sent to the docker image.
 image | None | An image to use. (Overrides the main pod image)
 namespace | None | A namespace to use (Overrides/adds a namespace to main resource)
 envs | None | A dictionary of envs to add to the main job pod.
+labels | None | A dictionary of labels to add to the manifests.
 body | None | The body of the job to use. Can be string, dictionary.
 body_filepath | None | A filepath to the yaml config file. Can use a relative filepath.
 image_pull_policy | Always | The kubernetes image pull policy (str)
@@ -228,12 +229,12 @@ spec:
         - infinity
 ```
 
-When executed, only the status of the main container will be taken into account when determining the state of the task. 
+When executed, only the status of the main container will be taken into account when determining the state of the task.
 **Note**, if the delete policy is not one of `Always`,`IfFailed`, the sidecar will continue executing on failure.
 
 # XCom
 
-The implementation of XCom via the KubernetesJobOperator differes from the one by KuberenetesPodsOperator, 
+The implementation of XCom via the KubernetesJobOperator differes from the one by KuberenetesPodsOperator,
 and therefore no backward compatible implementation for XCom currently exists.
 
 To use xcom with KubernetesJobOperator simply add a log line to your pod log output,

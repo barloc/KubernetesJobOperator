@@ -48,6 +48,7 @@ class JobRunner:
         random_name_postfix_length: int = 8,
         name_prefix: str = None,
         name_postfix: str = None,
+        labels: dict = None,
     ):
         """A kubernetes job runner. Creates a collection of resources and waits for the
         first resource to reach one of KubeResourceState.Succeeded/KubeResourceState.Failed/KubeResourceState.Deleted
@@ -68,6 +69,8 @@ class JobRunner:
             random_name_postfix_length (int, optional): Add a random string to all resource names if > 0. Defaults to 8.
             name_prefix (str, optional): The prefix for the all resource names. Defaults to None.
             name_postfix (str, optional): The postfix for all resource name. Defaults to None.
+            labels (dict, optional): A dictionary of key value pairs that is inserted to the job labels.
+                Defaults to None.
         """
 
         logger = logger if logger is not None else kube_logger
@@ -100,6 +103,8 @@ class JobRunner:
 
         if self.show_runner_id_on_logs is None:
             self.show_runner_id_on_logs = SHOW_RUNNER_ID_IN_LOGS
+
+        self.labels = labels if labels else {}
 
         super().__init__()
 
@@ -225,12 +230,8 @@ class JobRunner:
         assert len(name_parts) > 0, JobRunnerException("Invalid name or auto generated name")
         descriptor.name = "-".join(name_parts)
 
-        self._update_metadata_labels(
-            body,
-            {
-                self.job_runner_instance_id_label_name: self.id,
-            },
-        )
+        self.labels[self.job_runner_instance_id_label_name] = self.id
+        self._update_metadata_labels(body, self.labels)
 
         if kind.name in self.custom_prepare_kinds:
             self.custom_prepare_kinds[kind.name](body)
